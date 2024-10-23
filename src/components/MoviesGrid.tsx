@@ -11,20 +11,94 @@ interface Movie {
     rating: number;
 }
 
-
-
 const MoviesGrid: React.FC = () => {
 
     const [movies, setMovies] = useState<Movie[]>([]);
+    const [search, setSearch] = useState<string>("");
+
+
+    const [genre, setGenre] = useState("All Genres");
+    const [rating, setRating] = useState("All");
 
     useEffect(() => {
         fetch("movies.json")
             .then(response => response.json())
             .then(data => setMovies(data))
     }, [])  //[]here we are calling for one time only
+
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(e.target.value);
+    }
+
+    const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setGenre(e.target.value);
+    }
+
+    const handleRatingChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setRating(e.target.value);
+    }
+
+    const matchesGenre = (movie: Movie, genre: string) => {
+        return genre === "All Genres" || movie.genre.toLowerCase() === genre.toLowerCase();
+    }
+
+    const searchTerm = (movie: Movie, search: string) => {
+        return movie.title.toLowerCase().includes(search.toLowerCase())
+    }
+
+    const mactchesRating = (movie: Movie, rating: string) => {
+        switch (rating) {
+            case 'All':
+                return true;
+            case 'Good':
+                return movie.rating >= 8;
+            case 'OK':
+                return movie.rating <= 8 && movie.rating >= 5;
+            case 'Bad':
+                return movie.rating < 5;
+
+            default:
+                return false;
+        }
+    }
+
+    const filterMovies = movies.filter(movie =>
+        matchesGenre(movie, genre) && mactchesRating(movie, rating) && searchTerm(movie, search)
+    );
     return (
         <div>
-            <MovieCard movies={movies} />
+            <input type="text"
+                className="search-input"
+                placeholder="search movies.."
+                value={search}
+                onChange={handleSearchChange} />
+
+            <div className="filter-bar">
+                <div className="filter-slot">
+                    <label>Genre</label>
+                    <select className="filter-dropdown" value={genre} onChange={handleGenreChange}>
+                        <option>All Genres</option>
+                        <option>Action</option>
+                        <option>Drama</option>
+                        <option>Fantasy</option>
+                        <option>Horror</option>
+                    </select>
+                </div>
+
+                <div className="filter-slot">
+                    <label>Rating</label>
+                    <select className="filter-dropdown" value={rating} onChange={handleRatingChange}>
+                        <option>All</option>
+                        <option>Good</option>
+                        <option>Bad</option>
+                        <option>Ok</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <MovieCard movies={filterMovies} />
+            </div>
         </div>
     )
 }
