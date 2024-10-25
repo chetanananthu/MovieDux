@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useState } from "react";
 import '../styles.css';
 import MovieCard from "./MovieCard";
@@ -11,20 +11,18 @@ interface Movie {
     rating: number;
 }
 
-const MoviesGrid: React.FC = () => {
+interface Movies {
+    movies: Movie[];
+    watchlist: number[];
+    toggleWatchlist: (movie: any) => void;
+}
 
-    const [movies, setMovies] = useState<Movie[]>([]);
+const MoviesGrid: React.FC<Movies> = ({ movies, watchlist, toggleWatchlist }) => {
     const [search, setSearch] = useState<string>("");
-
 
     const [genre, setGenre] = useState("All Genres");
     const [rating, setRating] = useState("All");
 
-    useEffect(() => {
-        fetch("movies.json")
-            .then(response => response.json())
-            .then(data => setMovies(data))
-    }, [])  //[]here we are calling for one time only
 
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,8 +94,10 @@ const MoviesGrid: React.FC = () => {
                     </select>
                 </div>
             </div>
-            <div>
-                <MovieCard movies={filterMovies} />
+            <div className="movies-grid">
+                {filterMovies.map((movie) => (
+                    <MovieCard key={movie.id} movie={movie} toggleWatchlist={toggleWatchlist} isWatchlisted={watchlist.includes(movie.id)} />
+                ))}
             </div>
         </div>
     )
